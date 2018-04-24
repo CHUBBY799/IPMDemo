@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:plain="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script type="text/javascript" src="/scripts/jquery-easyui-1.5.5/jquery.min.js"></script>
+    <script type="text/javascript" src="/scripts/jquery-easyui-1.5.5/jquery.easyui.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/scripts/jquery-easyui-1.5.5/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="/scripts/jquery-easyui-1.5.5/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="/scripts/jquery-easyui-1.5.5/demo/demo.css">
+
+    <script type="text/javascript">
+        $(function(){
+            $("#dg").datagrid({
+                url:"/allproject",
+                columns:[[
+                    {field:'id',title:'id',width:100},
+                    {field:'name',title:'name',width:100},
+                    {field:'manager',title:'manager',width:100},
+                    {field:'teacherId',title:'teacherId',width:100},
+                    {field:'type',title:'type',width:100},
+                    {field:'level',title:'level',width:100},
+                    {field:'status',title:'status',width:100},
+                ]],
+                toolbar:'#toolbar',  //表格菜单
+                loadMsg:'嗖 ----正在火速加载中 -------------', //加载提示
+                pagination:true, //显示分页工具栏
+                rownumbers:true, //显示行号列
+                singleSelect:true,//是允许选择一行
+                queryParams:{   //在请求数据是发送的额外参数，如果没有则不用
+                    name:'easyui',
+                    hhh:'aa'
+                }
+            });
+
+        });
+        function newProject(){
+            $('#dlg').dialog('open').dialog('setTitle','New User');
+            $('#fm').form('clear');
+            url ='/addproject';
+        }
+        function editProject() {
+            var row = $('#dg').datagrid('getSelected');
+            if (row){
+                $('#dlg').dialog('open').dialog('setTitle','Edit User');
+                $('#fm').form('load',row);
+                url = '/updateproject?id='+row.id;
+            }
+        }
+        function saveProject(){
+            $('#fm').form('submit',{
+                url: url,
+                onSubmit: function(){
+                    return $(this).form('validate');
+                },
+                success: function(result){
+                    var result = eval('('+result+')');
+                    if (result.errorMsg){
+                        $.messager.show({
+                            title: 'Error',
+                            msg: result.errorMsg
+                        });
+                    } else {
+                        $('#dlg').dialog('close');		// close the dialog
+                        $('#dg').datagrid('reload');	// reload the user data
+                    }
+                }
+            });
+        }
+        function destroyProject(){
+            var row = $('#dg').datagrid('getSelected');
+            if (row){
+                $.messager.confirm('Confirm','Are you sure you want to destroy this user?',function(r){
+                    if (r){
+                        $.post('/destroyproject',{id:row.id},function(result){
+                            if (result.success){
+                                $('#dg').datagrid('reload');	// reload the user data
+                            } else {
+                                $.messager.show({	// show error message
+                                    title: 'Error',
+                                    msg: result.errorMsg
+                                });
+                            }
+                        },'json');
+                    }
+                });
+            }
+        }
+    </script>
+</head>
+<body>
+<table id="dg"></table>
+<div id="toolbar">
+    <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newProject()">New Project</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editProject()">Edit Project</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyProject()">Remove Project</a>
+</div>
+<div id="dlg" class="easyui-dialog" style="width:400px;height:280px;padding:10px 20px"
+     closed="true" buttons="#dlg-buttons">
+    <div class="ftitle">User Information</div>
+    <form id="fm" method="post">
+        <div class="fitem">
+            <label>name:</label>
+            <input name="name" class="easyui-validatebox" >
+        </div>
+        <div class="fitem">
+            <label>manager:</label>
+            <input name="manager" class="easyui-validatebox" >
+        </div>
+        <div class="fitem">
+            <label>teacherId:</label>
+            <input name="teacherId">
+        </div>
+        <div class="fitem">
+            <label>type:</label>
+            <input name="type" class="easyui-validatebox" >
+        </div>
+        <div class="fitem">
+            <label>level:</label>
+            <input name="level" class="easyui-validatebox" >
+        </div>
+        <div class="fitem">
+            <label>status:</label>
+            <input name="status" class="easyui-validatebox">
+        </div>
+    </form>
+</div>
+<div id="dlg-buttons">
+    <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveProject()">Save</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')">Cancel</a>
+</div>
+</body>
+</html>
