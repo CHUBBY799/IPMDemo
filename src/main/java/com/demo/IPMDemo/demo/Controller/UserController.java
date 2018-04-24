@@ -1,5 +1,6 @@
 package com.demo.IPMDemo.demo.Controller;
 
+import com.demo.IPMDemo.demo.Service.SensitiveService;
 import com.demo.IPMDemo.demo.Service.UserService;
 import com.demo.IPMDemo.demo.model.User;
 import org.slf4j.Logger;
@@ -22,7 +23,8 @@ public class UserController {
     private static final Logger logger= LoggerFactory.getLogger(UserController.class);
     @Autowired
     UserService userService;
-
+    @Autowired
+    SensitiveService sensitiveService;
     @RequestMapping(path = {"/reg/"}, method = {RequestMethod.POST})
     public String reg(Model model, @RequestParam("username") String username,
                       @RequestParam("password") String password,
@@ -30,6 +32,7 @@ public class UserController {
                       @RequestParam("identity") String identity,
                       HttpServletResponse response) {
         try {
+            username=sensitiveService.filter(username);
             Map<String, Object> map =userService.register(username,password,identity);
             if (map.containsKey("ticket")) {
                 Cookie cookie = new Cookie("ticket", map.get("ticket").toString());
